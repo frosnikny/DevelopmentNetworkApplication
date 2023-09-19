@@ -38,24 +38,12 @@ func StartServer() {
 	log.Println("Server start up")
 
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 
 	r.LoadHTMLGlob("templates/html/*")
 
-	r.GET("/home", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "product-card.gohtml", gin.H{
-			"title":       "Gift",
-			"description": "Тестовое описание",
-		})
-	})
-
 	pipe := ds.GetPipeline()
 
-	r.GET("/ind", func(c *gin.Context) {
+	r.GET("/home", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.gohtml", gin.H{
 			"pipeline": pipe,
 		})
@@ -92,7 +80,7 @@ func StartServer() {
 		})
 	})
 
-	r.Static("/image", "./resources")
+	r.Static("/images", "./resources")
 	r.Static("/styles", "./templates/css")
 
 	r.Run()
