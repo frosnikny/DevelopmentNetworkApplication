@@ -19,7 +19,7 @@ import (
 
 func search(query string, persons []ds.Person) []ds.Person {
 	// Создаем результирующий массив
-	results := []ds.Person{}
+	var results []ds.Person
 
 	// Проходим по массиву продуктов
 	for _, person := range persons {
@@ -83,7 +83,11 @@ func StartServer() {
 	r.Static("/images", "./resources")
 	r.Static("/styles", "./templates/css")
 
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		log.Println("Server start up error", err)
+		return
+	}
 
 	log.Println("Sever down")
 }
