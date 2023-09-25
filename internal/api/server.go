@@ -9,28 +9,15 @@ import (
 	"strings"
 )
 
-//type Person struct {
-//	Index       int
-//	Title       string
-//	Description string
-//	ImageName   string
-//	Price       int
-//}
-
 func search(query string, persons []ds.Person) []ds.Person {
-	// Создаем результирующий массив
 	var results []ds.Person
 
-	// Проходим по массиву продуктов
 	for _, person := range persons {
-		// Проверяем, содержит ли продукт указанный запрос
 		if strings.Contains(person.Title, query) {
-			// Добавляем продукт в результирующий массив
 			results = append(results, person)
 		}
 	}
 
-	// Возвращаем результирующий массив
 	return results
 }
 
@@ -50,10 +37,8 @@ func StartServer() {
 	})
 
 	r.GET("/full/:page", func(c *gin.Context) {
-		// Получить переменную запроса page
 		page := c.Param("page")
 
-		// Считать значение переменной запроса
 		number, err := strconv.Atoi(page)
 		if err != nil || number > len(pipe) {
 			number = 0
@@ -66,15 +51,11 @@ func StartServer() {
 		})
 	})
 
-	// Добавляем обработчик событий для кнопки
 	r.GET("/search", func(c *gin.Context) {
-		// Получаем значение запроса из формы
 		query := c.Query("query")
 
-		// Выполняем поиск
 		results := search(query, pipe)
 
-		// Отображаем результаты поиска
 		c.HTML(200, "index.gohtml", gin.H{
 			"pipeline": results,
 		})

@@ -1,8 +1,5 @@
-<!-- Карточка товара -->
 <div class="card">
-    <!-- Верхняя часть -->
     <div class="card__top">
-        <!-- Изображение-ссылка товара -->
         <a href="/full/{{ .Index }}" class="card__image">
             <img
                     src="../images/{{ .ImageName }}"
@@ -10,20 +7,13 @@
             />
         </a>
     </div>
-    <!-- Нижняя часть -->
     <div class="card__bottom">
-        <!-- Ссылка-название товара -->
         <div class="card__prices">
             <div class="card__price card__price--discount">{{ .Price }}</div>
         </div>
         <a href="/full/{{ .Index }}" class="card__title">
             {{ .Title }}
         </a>
-{{/*        <!-- Описание товара -->*/}}
-{{/*        <p>*/}}
-{{/*            {{ .Description }}*/}}
-{{/*        </p>*/}}
-        <!-- Кнопка просмотра подробной информации -->
         <a style="text-decoration: none;" href="/full/{{ .Index }}">
             <button class="card__add">Подробнее</button>
         </a>

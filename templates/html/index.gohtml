@@ -9,7 +9,7 @@
 {{template "header.gohtml" .}}
 
 <body>
-    <div class="many_cards">
+    <div class="many-cards">
         {{ range $index, $person := .pipeline }}
             {{template "product-card.gohtml" .}}
         {{ end }}
