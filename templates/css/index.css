@@ -4,7 +4,7 @@ body {
     padding: 0px;
 }
 
-.many_cards {
+.many-cards {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
