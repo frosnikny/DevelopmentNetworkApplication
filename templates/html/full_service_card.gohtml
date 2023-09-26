@@ -10,7 +10,10 @@
         <img src="../images/{{ .ImageName }}" alt="Фотография услуги" />
     </div>
     <div class="card-details__info">
-        <h2 class="card-details__title">{{ .Title }}</h2>
+        <div class="card-details__top">
+            <h2 class="card-details__title">{{ .Title }}</h2>
+            <p class="card-details__price">{{ .Price }}</p>
+        </div>
         <hr>
         <p class="card-details__description">{{ .Description }}</p>
     </div>

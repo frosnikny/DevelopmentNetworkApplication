@@ -48,6 +48,24 @@ body {
 
 }
 
+.card-details__top {
+    display: flex;
+    flex-direction: row;
+    gap: 1%;
+}
+
+.card-details__price {
+    font-size: 20px;
+    font-style: italic;
+    color: rgb(161, 161, 161);
+}
+
+.card-details__price::after {
+    content: "₽";
+    margin-left: 4px;
+    position: relative;
+}
+
 hr {
     color: #fafafa;
     width: 100%;

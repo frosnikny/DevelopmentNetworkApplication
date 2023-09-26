@@ -48,6 +48,7 @@ func StartServer() {
 			"Title":       services[number].Title,
 			"Description": services[number].Description,
 			"ImageName":   services[number].ImageName,
+			"Price":       services[number].Price,
 		})
 	})
 
