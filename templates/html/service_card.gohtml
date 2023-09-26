@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card__top">
-        <a href="/full/{{ .Index }}" class="card__image">
+        <a href="/service/{{ .ID }}" class="card__image">
             <img
                     src="../images/{{ .ImageName }}"
                     alt="Фотография услуги"
@@ -11,10 +11,10 @@
         <div class="card__prices">
             <div class="card__price card__price--discount">{{ .Price }}</div>
         </div>
-        <a href="/full/{{ .Index }}" class="card__title">
+        <a href="/service/{{ .ID }}" class="card__title">
             {{ .Title }}
         </a>
-        <a style="text-decoration: none;" href="/full/{{ .Index }}">
+        <a style="text-decoration: none;" href="/service/{{ .ID }}">
             <button class="card__add">Подробнее</button>
         </a>
     </div>

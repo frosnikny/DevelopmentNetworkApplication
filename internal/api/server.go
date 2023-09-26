@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-func search(query string, persons []ds.Person) []ds.Person {
-	var results []ds.Person
+func search(query string, services []ds.Service) []ds.Service {
+	var results []ds.Service
 
-	for _, person := range persons {
-		if strings.Contains(person.Title, query) {
-			results = append(results, person)
+	for _, service := range services {
+		if strings.Contains(service.Title, query) {
+			results = append(results, service)
 		}
 	}
 
@@ -28,36 +28,36 @@ func StartServer() {
 
 	r.LoadHTMLGlob("templates/html/*")
 
-	pipe := ds.GetPipeline()
+	services := ds.GetServices()
 
 	r.GET("/home", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.gohtml", gin.H{
-			"pipeline": pipe,
+			"services": services,
 		})
 	})
 
-	r.GET("/full/:page", func(c *gin.Context) {
+	r.GET("/service/:page", func(c *gin.Context) {
 		page := c.Param("page")
 
 		number, err := strconv.Atoi(page)
-		if err != nil || number > len(pipe) {
+		if err != nil || number > len(services) {
 			number = 0
 		}
 
-		c.HTML(http.StatusOK, "full-card.gohtml", gin.H{
-			"Title":       pipe[number].Title,
-			"Description": pipe[number].Description,
-			"ImageName":   pipe[number].ImageName,
+		c.HTML(http.StatusOK, "full_service_card.gohtml", gin.H{
+			"Title":       services[number].Title,
+			"Description": services[number].Description,
+			"ImageName":   services[number].ImageName,
 		})
 	})
 
 	r.GET("/search", func(c *gin.Context) {
-		query := c.Query("query")
+		searchServiceName := c.Query("serviceName")
 
-		results := search(query, pipe)
+		results := search(searchServiceName, services)
 
 		c.HTML(200, "index.gohtml", gin.H{
-			"pipeline": results,
+			"services": results,
 		})
 	})
 

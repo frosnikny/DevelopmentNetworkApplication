@@ -10,8 +10,8 @@
 
 <body>
     <div class="many-cards">
-        {{ range $index, $person := .pipeline }}
-            {{template "product-card.gohtml" .}}
+        {{ range $index, $service := .services }}
+            {{template "service_card.gohtml" .}}
         {{ end }}
     </div>
 </body>
