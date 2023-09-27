@@ -50,14 +50,12 @@ func StartServer() {
 
 	r.GET("/home", func(c *gin.Context) {
 		searchDevelopmentServiceName := c.Query("developmentServiceName")
-
-		results := search(searchDevelopmentServiceName, developmentServices)
-
-		if len(results) == 0 {
+		if len(searchDevelopmentServiceName) == 0 {
 			c.HTML(http.StatusOK, "index.gohtml", gin.H{
 				"developmentServices": developmentServices,
 			})
 		} else {
+			results := search(searchDevelopmentServiceName, developmentServices)
 
 			c.HTML(200, "index.gohtml", gin.H{
 				"developmentServices": results,
