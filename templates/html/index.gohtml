@@ -10,7 +10,7 @@
 
 <body>
     <div class="many-cards">
-        {{ range $index, $service := .services }}
+        {{ range $index, $developmentService := .developmentServices }}
             {{template "service_card.gohtml" .}}
         {{ end }}
     </div>

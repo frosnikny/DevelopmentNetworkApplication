@@ -9,12 +9,14 @@ import (
 	"strings"
 )
 
-func search(query string, services []ds.Service) []ds.Service {
-	var results []ds.Service
+func search(query string, developmentServices []ds.DevelopmentService) []ds.DevelopmentService {
+	var results []ds.DevelopmentService
 
-	for _, service := range services {
-		if strings.Contains(service.Title, query) {
-			results = append(results, service)
+	query = strings.ToLower(query)
+
+	for _, developmentService := range developmentServices {
+		if strings.Contains(strings.ToLower(developmentService.Title), query) {
+			results = append(results, developmentService)
 		}
 	}
 
@@ -28,38 +30,39 @@ func StartServer() {
 
 	r.LoadHTMLGlob("templates/html/*")
 
-	services := ds.GetServices()
-
-	r.GET("/home", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.gohtml", gin.H{
-			"services": services,
-		})
-	})
+	developmentServices := ds.GetDevelopmentServices()
 
 	r.GET("/service/:page", func(c *gin.Context) {
 		page := c.Param("page")
 
 		number, err := strconv.Atoi(page)
-		if err != nil || number > len(services) {
+		if err != nil || number > len(developmentServices) {
 			number = 0
 		}
 
 		c.HTML(http.StatusOK, "full_service_card.gohtml", gin.H{
-			"Title":       services[number].Title,
-			"Description": services[number].Description,
-			"ImageName":   services[number].ImageName,
-			"Price":       services[number].Price,
+			"Title":       developmentServices[number].Title,
+			"Description": developmentServices[number].Description,
+			"ImageName":   developmentServices[number].ImageName,
+			"Price":       developmentServices[number].Price,
 		})
 	})
 
-	r.GET("/search", func(c *gin.Context) {
-		searchServiceName := c.Query("serviceName")
+	r.GET("/home", func(c *gin.Context) {
+		searchDevelopmentServiceName := c.Query("developmentServiceName")
 
-		results := search(searchServiceName, services)
+		results := search(searchDevelopmentServiceName, developmentServices)
 
-		c.HTML(200, "index.gohtml", gin.H{
-			"services": results,
-		})
+		if len(results) == 0 {
+			c.HTML(http.StatusOK, "index.gohtml", gin.H{
+				"developmentServices": developmentServices,
+			})
+		} else {
+
+			c.HTML(200, "index.gohtml", gin.H{
+				"developmentServices": results,
+			})
+		}
 	})
 
 	r.Static("/images", "./resources")
