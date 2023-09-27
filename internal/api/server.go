@@ -32,7 +32,7 @@ func StartServer() {
 
 	developmentServices := ds.GetDevelopmentServices()
 
-	r.GET("/service/:page", func(c *gin.Context) {
+	r.GET("/development/:page", func(c *gin.Context) {
 		page := c.Param("page")
 
 		number, err := strconv.Atoi(page)
@@ -61,6 +61,7 @@ func StartServer() {
 
 			c.HTML(200, "index.gohtml", gin.H{
 				"developmentServices": results,
+				"searchName":          searchDevelopmentServiceName,
 			})
 		}
 	})
