@@ -14,8 +14,16 @@
         <a href="/development/{{ .ID }}" class="card__title">
             {{ .Title }}
         </a>
-        <a style="text-decoration: none;" href="/development/{{ .ID }}">
-            <button class="card__add">Подробнее</button>
-        </a>
+        <div class="card__buttons">
+            <a class="link-card__add" href="/development/{{ .ID }}">
+                <button class="card__add">Подробнее</button>
+            </a>
+            {{ if .RecordStatus }}
+            {{ else }}
+                <a class="link-card__add" href="/home?deleteDevelopmentServiceID={{ .ID }}">
+                    <button class="card__add card__add_delete">Удалить</button>
+                </a>
+            {{ end }}
+        </div>
     </div>
 </div>

@@ -93,10 +93,25 @@
     cursor: pointer;
     transition: 0.2s;
     margin-top: auto;
+    margin-bottom: 5%;
+}
+
+.link-card__add {
+    text-decoration: none;
 }
 
 .card__add:hover {
     border: 1px solid #FF4C2B;
     background-color: #FF4C2B;
     color: #fff;
+}
+
+.card__add_delete {
+    color: #9b1f00;
+    border-color: #9b1f00;
+}
+
+.card__add_delete:hover {
+    border-color: #9b1f00;
+    background-color: #9b1f00;
 }

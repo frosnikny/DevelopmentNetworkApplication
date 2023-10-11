@@ -9,14 +9,20 @@ header {
 }
 
 .nav-container {
+    display: flex;
+    gap: 25%;
     color: #fafafa;
     list-style-type: none;
-    margin-left: 50%;
+    margin-left: 25%;
 }
 
 .nav-container > li > a {
     text-decoration: none;
     color: #fafafa;
+}
+
+.nav-container > li > a:hover {
+    color: #FF4C2B;
 }
 
 
