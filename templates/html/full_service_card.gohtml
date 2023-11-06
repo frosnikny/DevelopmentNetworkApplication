@@ -5,6 +5,9 @@
 
 {{template "header.gohtml" .}}
 
+{{ if .RecordStatus }}
+    <h1 class="card-details__title card-details__title-deleted">Данные были удалены</h1>
+{{ else }}
 <div class="card-details">
     <div class="card-details__image">
         <img src="../images/{{ .ImageName }}" alt="Фотография услуги" />
@@ -12,9 +15,15 @@
     <div class="card-details__info">
         <div class="card-details__top">
             <h2 class="card-details__title">{{ .Title }}</h2>
-            <p class="card-details__price">{{ .Price }}</p>
+            <p class="card-details__price">от {{ .Price }}</p>
         </div>
         <hr>
         <p class="card-details__description">{{ .Description }}</p>
+        <p class="card-details__technologies"><b>Используемые технологии:</b> {{ .Technology }}</p>
+        <div class="card-details__cost">
+            <p><b>Детальная стоимость:</b></p>
+            <pre>{{ .DetailedCost }}</pre>
+        </div>
     </div>
 </div>
+{{ end }}

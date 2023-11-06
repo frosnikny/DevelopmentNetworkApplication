@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "awesomeProject/internal/api"
 	"awesomeProject/internal/pkg/app"
 	"log"
 )

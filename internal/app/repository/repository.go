@@ -49,7 +49,7 @@ func (r *Repository) GetDeletedDevelopmentServices() (*[]ds.DevelopmentService, 
 func (r *Repository) GetDevelopmentServiceByID(id uint) (*ds.DevelopmentService, error) {
 	developmentService := &ds.DevelopmentService{}
 
-	err := r.db.First(developmentService, "id = ?", strconv.Itoa(int(id))).Error
+	err := r.db.First(developmentService, "development_service_id = ?", strconv.Itoa(int(id))).Error
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +68,11 @@ func (r *Repository) FindDevelopmentServiceByName(name string) (*[]ds.Developmen
 	return developmentServices, nil
 }
 
-func (r *Repository) DeleteDevelopmentServiceByID(id uint) error {
+func (r *Repository) DeleteDevelopmentServiceByID(developmentServiceId uint) error {
 	developmentService := &ds.DevelopmentService{}
 
-	r.db.Exec("UPDATE development_services SET record_status = 1 WHERE id = @id", sql.Named("id", id))
-	err := r.db.First(developmentService, "id = ?", strconv.Itoa(int(id))).Error
+	r.db.Exec("UPDATE development_services SET record_status = 1 WHERE development_service_id = @development_service_id", sql.Named("development_service_id", developmentServiceId))
+	err := r.db.First(developmentService, "development_service_id = ?", strconv.Itoa(int(developmentServiceId))).Error
 	return err
 }
 

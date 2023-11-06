@@ -1,7 +1,7 @@
 body {
     background-color: #2D384A;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 
 .card-details {
@@ -35,8 +35,16 @@ body {
 .card-details__title {
     font-weight: 400;
     font-size: 24px;
-    margin-bottom: 0px;
+    margin-bottom: 0;
     color: #e0e0e0;
+}
+
+.card-details__title-deleted {
+    margin-top: 30px;
+    font-size: 36px;
+    text-align: center;
+    font-weight: bold;
+    color: #da0f0f;
 }
 
 .card-details__description {
@@ -46,6 +54,34 @@ body {
     margin-bottom: 20px;
     overflow-wrap: anywhere;
 
+}
+
+.card-details__technologies {
+    /*font-weight: bold;*/
+    font-size: 18px;
+    color: #e0e0e0;
+    margin-top: 5px;
+}
+
+.card-details__cost {
+    font-size: 18px;
+    color: #e0e0e0;
+    margin-top: 20px;
+}
+
+.card-details__cost p {
+    /*font-weight: bold;*/
+    margin: 0;
+    padding: 0;
+}
+
+.card-details__cost pre {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 18px;
+    /*padding-top: 0;*/
+    margin-top: 4px;
+    /*list-style: disc;*/
+    padding-left: 10px;
 }
 
 .card-details__top {

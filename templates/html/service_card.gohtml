@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card__top">
-        <a href="/development/{{ .ID }}" class="card__image">
+        <a href="/development/{{ .DevelopmentServiceId }}" class="card__image">
             <img
                     src="../images/{{ .ImageName }}"
                     alt="Фотография услуги"
@@ -9,18 +9,18 @@
     </div>
     <div class="card__bottom">
         <div class="card__prices">
-            <div class="card__price card__price--discount">{{ .Price }}</div>
+            <div class="card__price card__price--discount">От {{ .Price }}</div>
         </div>
-        <a href="/development/{{ .ID }}" class="card__title">
+        <a href="/development/{{ .DevelopmentServiceId }}" class="card__title">
             {{ .Title }}
         </a>
         <div class="card__buttons">
-            <a class="link-card__add" href="/development/{{ .ID }}">
+            <a class="link-card__add" href="/development/{{ .DevelopmentServiceId }}">
                 <button class="card__add">Подробнее</button>
             </a>
             {{ if .RecordStatus }}
             {{ else }}
-                <a class="link-card__add" href="/home?deleteDevelopmentServiceID={{ .ID }}">
+                <a class="link-card__add" href="/home?deleteDevelopmentServiceID={{ .DevelopmentServiceId }}">
                     <button class="card__add card__add_delete">Удалить</button>
                 </a>
             {{ end }}
