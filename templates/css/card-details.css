@@ -70,3 +70,24 @@ hr {
     color: #fafafa;
     width: 100%;
 }
+
+.card-details__cost {
+    font-size: 18px;
+    color: #e0e0e0;
+    margin-top: 20px;
+}
+
+.card-details__cost p {
+    /*font-weight: bold;*/
+    margin: 0;
+    padding: 0;
+}
+
+.card-details__cost pre {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 18px;
+    /*padding-top: 0;*/
+    margin-top: 4px;
+    /*list-style: disc;*/
+    padding-left: 10px;
+}

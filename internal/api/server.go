@@ -41,10 +41,11 @@ func StartServer() {
 		}
 
 		c.HTML(http.StatusOK, "full_service_card.gohtml", gin.H{
-			"Title":       developmentServices[number].Title,
-			"Description": developmentServices[number].Description,
-			"ImageName":   developmentServices[number].ImageName,
-			"Price":       developmentServices[number].Price,
+			"Title":        developmentServices[number].Title,
+			"Description":  developmentServices[number].Description,
+			"ImageName":    developmentServices[number].ImageName,
+			"Price":        developmentServices[number].Price,
+			"DetailedCost": developmentServices[number].DetailedCost,
 		})
 	})
 

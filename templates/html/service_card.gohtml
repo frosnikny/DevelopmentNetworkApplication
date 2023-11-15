@@ -9,13 +9,15 @@
     </div>
     <div class="card__bottom">
         <div class="card__prices">
-            <div class="card__price card__price--discount">{{ .Price }}</div>
+            <div class="card__price card__price--discount">От {{ .Price }}</div>
         </div>
         <a href="/development/{{ .ID }}" class="card__title">
             {{ .Title }}
         </a>
-        <a style="text-decoration: none;" href="/development/{{ .ID }}">
-            <button class="card__add">Подробнее</button>
-        </a>
+        <div class="card__buttons">
+            <a class="link-card__add" href="/development/{{ .ID }}">
+                <button class="card__add">Подробнее</button>
+            </a>
+        </div>
     </div>
 </div>
