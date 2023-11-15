@@ -21,14 +21,14 @@ type User struct {
 }
 
 type DevelopmentService struct {
-	DevelopmentServiceId uint   `gorm:"primaryKey;not null"`
-	Title                string `gorm:"type:varchar(100)"`
-	Description          string `gorm:"type:text"`
-	ImageName            string `gorm:"type:varchar(100)"`
-	Price                uint   `gorm:"type:integer"`
-	RecordStatus         uint   `gorm:"type:integer"`
-	Technology           string `gorm:"type:text"`
-	DetailedCost         string `gorm:"type:text"`
+	UUID         string `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	Title        string `gorm:"type:varchar(100)"`
+	Description  string `gorm:"type:text"`
+	ImageName    string `gorm:"type:varchar(100)"`
+	Price        uint   `gorm:"type:integer"`
+	RecordStatus uint   `gorm:"type:integer"`
+	Technology   string `gorm:"type:text"`
+	DetailedCost string `gorm:"type:text"`
 }
 
 type CustomerRequest struct {

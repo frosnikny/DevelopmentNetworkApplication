@@ -46,10 +46,10 @@ func (r *Repository) GetDeletedDevelopmentServices() (*[]ds.DevelopmentService, 
 	return deletedDevelopmentServices, nil
 }
 
-func (r *Repository) GetDevelopmentServiceByID(id uint) (*ds.DevelopmentService, error) {
-	developmentService := &ds.DevelopmentService{}
+func (r *Repository) GetDevelopmentServiceByID(id string) (*ds.DevelopmentService, error) {
+	developmentService := &ds.DevelopmentService{UUID: id}
 
-	err := r.db.First(developmentService, "development_service_id = ?", strconv.Itoa(int(id))).Error
+	err := r.db.First(developmentService, "development_service_id = ?", false).Error
 	if err != nil {
 		return nil, err
 	}
