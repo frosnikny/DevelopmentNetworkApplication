@@ -32,7 +32,9 @@ func (r *Repository) GetAllCustomerRequests(formationDateStart, formationDateEnd
 
 func (r *Repository) GetDraftCustomerRequest(customerId string) (*ds.CustomerRequest, error) {
 	customerRequest := &ds.CustomerRequest{}
-	err := r.db.First(customerRequest, ds.CustomerRequest{RecordStatus: ds.CRDraft, CreatorId: customerId}).Error
+	err := r.db.Table("customer_requests").
+		Where("record_status = ?", ds.CRDraft).Where("creator_id", customerId).First(customerRequest).Error
+	log.Println(customerRequest)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
