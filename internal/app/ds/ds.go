@@ -11,14 +11,14 @@ type User struct {
 }
 
 type DevelopmentService struct {
-	UUID         string  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"uuid"`
-	Title        string  `gorm:"size:100"`
-	Description  string  `gorm:"type:text"`
-	ImageUrl     *string `gorm:"size:100" json:"image_url"`
-	Price        uint    `gorm:"type:integer"`
-	RecordStatus uint    `gorm:"type:integer"`
-	Technology   string  `gorm:"type:text"`
-	DetailedCost string  `gorm:"type:text"`
+	UUID          string  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"uuid"`
+	Title         string  `gorm:"size:100"`
+	Description   string  `gorm:"type:text"`
+	ImageUrl      *string `gorm:"size:100" json:"image_url"`
+	Price         float32 `gorm:"type:real"`
+	RecordStatus  uint    `gorm:"type:integer"`
+	Technology    string  `gorm:"type:text"`
+	DetailedPrice float32 `gorm:"type:real"`
 }
 
 type CustomerRequest struct {

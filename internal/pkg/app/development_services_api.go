@@ -120,8 +120,8 @@ func (a *Application) ChangeDevelopmentService(c *gin.Context) {
 	if request.Technology != "" {
 		developmentService.Technology = request.Technology
 	}
-	if request.DetailedCost != "" {
-		developmentService.DetailedCost = request.DetailedCost
+	if request.DetailedPrice != 0 {
+		developmentService.DetailedPrice = request.DetailedPrice
 	}
 	if request.Image != nil {
 		if developmentService.ImageUrl != nil {
