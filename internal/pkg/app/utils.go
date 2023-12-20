@@ -27,7 +27,7 @@ func (a *Application) uploadImage(c *gin.Context, image *multipart.FileHeader, U
 	if err != nil {
 		return nil, err
 	}
-	imageURL := fmt.Sprintf("%s/%s/%s", a.config.MinioEndpoint, a.config.BucketName, imageName)
+	imageURL := fmt.Sprintf("http://%s/%s/%s", a.config.MinioEndpoint, a.config.BucketName, imageName)
 	return &imageURL, nil
 }
 
