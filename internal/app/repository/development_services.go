@@ -4,7 +4,6 @@ import (
 	"awesomeProject/internal/app/ds"
 	"errors"
 	"gorm.io/gorm"
-	"log"
 	"strings"
 )
 
@@ -38,8 +37,6 @@ func (r *Repository) SaveDevelopmentService(developmentService *ds.DevelopmentSe
 
 func (r *Repository) GetDevelopmentServicesByName(developmentServiceName string) ([]ds.DevelopmentService, error) {
 	var developmentServices []ds.DevelopmentService
-
-	log.Println(developmentServiceName)
 
 	err := r.db.Where("lower(title) ilike ? AND record_status = 0", "%"+strings.ToLower(developmentServiceName)+"%").Find(&developmentServices).Error
 	if err != nil {

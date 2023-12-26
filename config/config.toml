@@ -1,4 +1,5 @@
-ServiceHost = "172.20.10.20"
+ServiceHost = "127.0.0.1"
 ServicePort = 8080
-MinioEndpoint = "172.20.10.20:9000"
+MinioEndpoint = "127.0.0.1:9000"
 BucketName = "images"
+Token = "a157b23c"

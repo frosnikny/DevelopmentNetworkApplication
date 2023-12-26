@@ -77,6 +77,19 @@ func (r *Repository) GetServiceRequests(customerRequestId string) ([]ds.Developm
 	return developmentServices, nil
 }
 
+func (r *Repository) GetServiceRequestsByCustId(customerRequestId string) ([]ds.ServiceRequest, error) {
+	var serviceRequests []ds.ServiceRequest
+
+	err := r.db.Table("service_requests").
+		Where(ds.ServiceRequest{CustomerRequestId: customerRequestId}).
+		Scan(&serviceRequests).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return serviceRequests, nil
+}
+
 func (r *Repository) GetCustomerRequestById(customerRequestId, customerId string) (*ds.CustomerRequest, error) {
 	customerRequest := &ds.CustomerRequest{}
 	err := r.db.Preload("Moderator").Preload("Creator").

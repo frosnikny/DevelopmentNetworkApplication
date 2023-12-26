@@ -30,6 +30,7 @@ type CustomerRequest struct {
 	WorkSpecification string    `gorm:"type:text"`
 	CreatorId         string    `gorm:"not null"`
 	ModeratorId       *string   `json:"-"`
+	PaymentStatus     *string   `gorm:"size:40"`
 
 	Creator   User
 	Moderator *User
@@ -57,5 +58,7 @@ const (
 	CRDeclined
 	CRDeleted
 )
+
+const PaymentStarted = "2"
 
 const ZeroUUID = "00000000-0000-0000-0000-000000000000"

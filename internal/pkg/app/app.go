@@ -39,6 +39,7 @@ func (a *Application) StartServer() {
 		a.DeleteFromCustomerRequest) // Изменение (удаление услуг)
 	r.PUT("/api/requests/:customer_request_id/user_confirm", a.UserConfirm)           // Сформировать создателем
 	r.PUT("/api/requests/:customer_request_id/moderator_confirm", a.ModeratorConfirm) // Сформировать модератором
+	r.PUT("/api/requests/:customer_request_id/payment", a.Payment)
 
 	err := r.Run(fmt.Sprintf("%s:%d", a.config.ServiceHost, a.config.ServicePort))
 	if err != nil {

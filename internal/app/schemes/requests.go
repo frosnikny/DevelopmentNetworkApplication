@@ -55,3 +55,11 @@ type ModeratorConfirmReq struct {
 	RecordStatus uint `form:"status" binding:"required"`
 	Confirm      bool `form:"confirm" binding:"required"`
 }
+
+type PaymentReq struct {
+	URI struct {
+		CustomerRequestId string `uri:"customer_request_id" binding:"required,uuid"`
+	}
+	PaymentStatus bool   `form:"payment_status" binding:"required"`
+	Token         string `form:"token" binding:"required"`
+}

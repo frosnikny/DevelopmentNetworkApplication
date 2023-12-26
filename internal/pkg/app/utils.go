@@ -1,10 +1,12 @@
 package app
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
 	"mime/multipart"
+	"net/http"
 	"path/filepath"
 )
 
@@ -48,4 +50,18 @@ func (a *Application) getCustomer() string {
 func (a *Application) getModerator() *string {
 	moderatorId := "01a6cec6-954d-4ce9-aeb1-3850d00162b4"
 	return &moderatorId
+}
+
+func paymentRequest(customerRequestId string) error {
+	url := "http://localhost:8000/"
+	payload := fmt.Sprintf(`{"customer_request_id": "%s"}`, customerRequestId)
+
+	resp, err := http.Post(url, "application/json", bytes.NewBufferString(payload))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf(`delivery failed with status: {%s}`, resp.Status)
+	}
+	return nil
 }

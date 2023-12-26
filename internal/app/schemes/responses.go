@@ -32,23 +32,40 @@ type UpdateCustomerRequestResponse struct {
 }
 
 type CustomerRequestOutputResponse struct {
-	UUID              string  `json:"uuid"`
-	RecordStatus      uint    `json:"record_status"`
-	CreationDate      string  `json:"creation_date"`
-	FormationDate     *string `json:"formation_date"`
-	CompletionDate    *string `json:"completion_date"`
-	WorkSpecification string  `json:"work_specification"`
-	Moderator         *string `json:"moderator"`
-	Creator           string  `json:"creator"`
+	UUID              string                   `json:"uuid"`
+	RecordStatus      uint                     `json:"record_status"`
+	CreationDate      string                   `json:"creation_date"`
+	FormationDate     *string                  `json:"formation_date"`
+	CompletionDate    *string                  `json:"completion_date"`
+	WorkSpecification string                   `json:"work_specification"`
+	Moderator         *string                  `json:"moderator"`
+	Creator           string                   `json:"creator"`
+	PaymentStatus     *string                  `json:"payment_status"`
+	ServiceRequests   []ServiceRequestResponse `json:"service_requests"`
 }
 
-func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest) CustomerRequestOutputResponse {
+type ServiceRequestResponse struct {
+	DevelopmentServiceId string `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"development_service_id"`
+	WorkScope            string `gorm:"type:text"`
+	WorkingDays          uint   `gorm:"type:integer"`
+}
+
+func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, serviceRequests []ds.ServiceRequest) CustomerRequestOutputResponse {
+	var serviceRequestsResponse = make([]ServiceRequestResponse, len(serviceRequests))
+	for i, serviceRequest := range serviceRequests {
+		serviceRequestsResponse[i].DevelopmentServiceId = serviceRequest.DevelopmentServiceId
+		serviceRequestsResponse[i].WorkScope = serviceRequest.WorkScope
+		serviceRequestsResponse[i].WorkingDays = serviceRequest.WorkingDays
+	}
+
 	output := CustomerRequestOutputResponse{
 		UUID:              customerRequest.UUID,
 		RecordStatus:      customerRequest.RecordStatus,
 		CreationDate:      customerRequest.CreationDate.Format("2006-01-02 15:04:05"),
 		WorkSpecification: customerRequest.WorkSpecification,
 		Creator:           customerRequest.Creator.Name,
+		PaymentStatus:     customerRequest.PaymentStatus,
+		ServiceRequests:   serviceRequestsResponse,
 	}
 
 	if !customerRequest.FormationDate.IsZero() { // != nil

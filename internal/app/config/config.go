@@ -13,6 +13,7 @@ type Config struct {
 	ServicePort   int
 	MinioEndpoint string
 	BucketName    string
+	Token         string
 }
 
 func NewConfig() (*Config, error) {
