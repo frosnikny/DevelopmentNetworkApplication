@@ -1,5 +1,15 @@
-ServiceHost = "127.0.0.1"
+ServiceHost = "0.0.0.0"
 ServicePort = 8080
-MinioEndpoint = "127.0.0.1:9000"
-BucketName = "images"
 Token = "a157b23c"
+
+[minio]
+Endpoint = "localhost:9000"
+BucketName = "images"
+
+[jwt]
+Token = "peppa"
+ExpiresIn = "24h"
+
+[Redis]
+DialTimeout = "10s"
+ReadTimeout = "10s"

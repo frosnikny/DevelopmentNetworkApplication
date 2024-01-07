@@ -1,13 +1,15 @@
 package ds
 
-import "time"
+import (
+	"awesomeProject/internal/app/role"
+	"time"
+)
 
 type User struct {
-	UUID      string `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	Username  string `gorm:"size:30;not null"`
-	Password  string `gorm:"size:30;not null"`
-	Name      string `gorm:"size:50;not null"`
-	Moderator bool   `gorm:"not null"`
+	UUID     string `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
+	Role     role.Role
+	Login    string `gorm:"size:30;not null" json:"login"`
+	Password string `gorm:"size:40;not null" json:"-"`
 }
 
 type DevelopmentService struct {

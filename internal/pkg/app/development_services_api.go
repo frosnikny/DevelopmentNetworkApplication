@@ -197,13 +197,14 @@ func (a *Application) AddToCustomerRequest(c *gin.Context) {
 
 	// Получить черновую заявку
 	var customerRequest *ds.CustomerRequest
-	customerRequest, err = a.repo.GetDraftCustomerRequest(a.getCustomer())
+	userId := getUserId(c)
+	customerRequest, err = a.repo.GetDraftCustomerRequest(userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if customerRequest == nil {
-		customerRequest, err = a.repo.CreateDraftCustomerRequest(a.getCustomer())
+		customerRequest, err = a.repo.CreateDraftCustomerRequest(userId)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return

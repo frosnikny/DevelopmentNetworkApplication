@@ -60,6 +60,16 @@ type PaymentReq struct {
 	URI struct {
 		CustomerRequestId string `uri:"customer_request_id" binding:"required,uuid"`
 	}
-	PaymentStatus bool   `form:"payment_status" binding:"required"`
+	PaymentStatus *bool  `form:"payment_status" binding:"required"`
 	Token         string `form:"token" binding:"required"`
+}
+
+type LoginReq struct {
+	Login    string `form:"login" binding:"required,max=30"`
+	Password string `form:"password" binding:"required,max=30"`
+}
+
+type RegisterReq struct {
+	Login    string `form:"login" binding:"required,max=30"`
+	Password string `form:"password" binding:"required,max=30"`
 }

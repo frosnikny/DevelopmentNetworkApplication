@@ -3,7 +3,9 @@ package app
 import (
 	"awesomeProject/internal/app/config"
 	"awesomeProject/internal/app/dsn"
+	"awesomeProject/internal/app/redis"
 	"awesomeProject/internal/app/repository"
+	"awesomeProject/internal/app/role"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
@@ -15,6 +17,7 @@ type Application struct {
 	repo        *repository.Repository
 	minioClient *minio.Client
 	config      *config.Config
+	redisClient *redis.Client
 }
 
 func (a *Application) StartServer() {
@@ -22,24 +25,44 @@ func (a *Application) StartServer() {
 
 	r := gin.Default()
 
-	// Услуги (Разработка)
-	r.GET("/api/devs", a.GetAllDevelopmentServices)                                    // Список с поиском
-	r.GET("/api/devs/:development_service_id", a.GetDevelopmentService)                // Одна услуга
-	r.DELETE("/api/devs/:development_service_id", a.DeleteDevelopmentService)          // Удаление
-	r.PUT("/api/devs/:development_service_id", a.ChangeDevelopmentService)             // Изменение
-	r.POST("/api/devs", a.AddDevelopmentService)                                       // Добавление
-	r.POST("/api/devs/:development_service_id/add_to_request", a.AddToCustomerRequest) // Добавление в заявку
+	r.Use(ErrorHandler())
 
-	// Заявки (Заказы)
-	r.GET("/api/requests", a.GetAllCustomerRequests)                            // Список (отфильтровать по дате формирования и статусу)
-	r.GET("/api/requests/:customer_request_id", a.GetCustomerRequest)           // Одна заявка
-	r.PUT("/api/requests/:customer_request_id/update", a.UpdateCustomerRequest) // Изменение (добавление спецификации)
-	r.DELETE("/api/requests/:customer_request_id", a.DeleteCustomerRequest)     // Удаление
-	r.DELETE("/api/requests/:customer_request_id/delete_development_service/:development_service_id",
-		a.DeleteFromCustomerRequest) // Изменение (удаление услуг)
-	r.PUT("/api/requests/:customer_request_id/user_confirm", a.UserConfirm)           // Сформировать создателем
-	r.PUT("/api/requests/:customer_request_id/moderator_confirm", a.ModeratorConfirm) // Сформировать модератором
-	r.PUT("/api/requests/:customer_request_id/payment", a.Payment)
+	api := r.Group("/api")
+	{
+		// Услуги (Разработка)
+		d := api.Group("/devs")
+		{
+			d.GET("", a.WithAuthCheck(role.NotAuthorized, role.Customer, role.Moderator), a.GetAllDevelopmentServices)                     // Список с поиском
+			d.GET("/:development_service_id", a.WithAuthCheck(role.NotAuthorized, role.Customer, role.Moderator), a.GetDevelopmentService) // Одна услуга
+			d.DELETE("/:development_service_id", a.WithAuthCheck(role.Moderator), a.DeleteDevelopmentService)                              // Удаление
+			d.PUT("/:development_service_id", a.WithAuthCheck(role.Moderator), a.ChangeDevelopmentService)                                 // Изменение
+			d.POST("", a.WithAuthCheck(role.Moderator), a.AddDevelopmentService)                                                           // Добавление
+			d.POST("/:development_service_id/add_to_request", a.WithAuthCheck(role.Customer, role.Moderator), a.AddToCustomerRequest)      // Добавление в заявку
+		}
+
+		// Заявки (Заказы)
+		req := api.Group("/requests")
+		{
+
+			req.GET("", a.WithAuthCheck(role.Customer, role.Moderator), a.GetAllCustomerRequests)                            // Список (отфильтровать по дате формирования и статусу)
+			req.GET("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.GetCustomerRequest)           // Одна заявка
+			req.PUT("/:customer_request_id/update", a.WithAuthCheck(role.Customer, role.Moderator), a.UpdateCustomerRequest) // Изменение (добавление спецификации)
+			req.DELETE("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.DeleteCustomerRequest)     // Удаление
+			req.DELETE("/:customer_request_id/delete_development_service/:development_service_id", a.WithAuthCheck(role.Customer, role.Moderator),
+				a.DeleteFromCustomerRequest) // Изменение (удаление услуг)
+			req.PUT("/:customer_request_id/user_confirm", a.WithAuthCheck(role.Customer, role.Moderator), a.UserConfirm) // Сформировать создателем
+			req.PUT("/:customer_request_id/moderator_confirm", a.WithAuthCheck(role.Moderator), a.ModeratorConfirm)      // Сформировать модератором
+			req.PUT("/:customer_request_id/payment", a.Payment)
+		}
+
+		// Пользователи (авторизация)
+		u := api.Group("/user")
+		{
+			u.POST("/sign_up", a.Register)
+			u.POST("/login", a.Login)
+			u.GET("/logout", a.Logout)
+		}
+	}
 
 	err := r.Run(fmt.Sprintf("%s:%d", a.config.ServiceHost, a.config.ServicePort))
 	if err != nil {
@@ -63,10 +86,16 @@ func New() *Application {
 		panic(err)
 	}
 
-	a.minioClient, err = minio.New(a.config.MinioEndpoint, &minio.Options{
+	a.minioClient, err = minio.New(a.config.Minio.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4("", "", ""),
 		Secure: false,
 	})
+	if err != nil {
+		log.Println("point: ", a.config.Minio.Endpoint)
+		panic(err)
+	}
+
+	a.redisClient, err = redis.New(a.config.Redis)
 	if err != nil {
 		panic(err)
 	}

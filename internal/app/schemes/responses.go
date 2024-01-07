@@ -19,7 +19,7 @@ type GetAllDevelopmentServicesResponse struct {
 }
 
 type AllCustomerRequestsResponse struct {
-	CustomerRequests []CustomerRequestOutputResponse `json:"customer_requests"`
+	CustomerRequests []AllCustomerRequestOutputResponse `json:"customer_requests"`
 }
 
 type CustomerRequestResponse struct {
@@ -29,6 +29,18 @@ type CustomerRequestResponse struct {
 
 type UpdateCustomerRequestResponse struct {
 	CustomerRequest CustomerRequestOutputResponse `json:"customer_request"`
+}
+
+type AllCustomerRequestOutputResponse struct {
+	UUID              string  `json:"uuid"`
+	RecordStatus      uint    `json:"record_status"`
+	CreationDate      string  `json:"creation_date"`
+	FormationDate     *string `json:"formation_date"`
+	CompletionDate    *string `json:"completion_date"`
+	WorkSpecification string  `json:"work_specification"`
+	Moderator         *string `json:"moderator"`
+	Creator           string  `json:"creator"`
+	PaymentStatus     *string `json:"payment_status"`
 }
 
 type CustomerRequestOutputResponse struct {
@@ -63,7 +75,7 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 		RecordStatus:      customerRequest.RecordStatus,
 		CreationDate:      customerRequest.CreationDate.Format("2006-01-02 15:04:05"),
 		WorkSpecification: customerRequest.WorkSpecification,
-		Creator:           customerRequest.Creator.Name,
+		Creator:           customerRequest.Creator.Login,
 		PaymentStatus:     customerRequest.PaymentStatus,
 		ServiceRequests:   serviceRequestsResponse,
 	}
@@ -79,8 +91,40 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 	}
 
 	if customerRequest.Moderator != nil {
-		output.Moderator = &customerRequest.Moderator.Name
+		output.Moderator = &customerRequest.Moderator.Login
 	}
 
 	return output
+}
+
+func ConvertAllCustomerRequestResponse(customerRequest *ds.CustomerRequest) AllCustomerRequestOutputResponse {
+	output := AllCustomerRequestOutputResponse{
+		UUID:              customerRequest.UUID,
+		RecordStatus:      customerRequest.RecordStatus,
+		CreationDate:      customerRequest.CreationDate.Format("2006-01-02 15:04:05"),
+		WorkSpecification: customerRequest.WorkSpecification,
+		Creator:           customerRequest.Creator.Login,
+		PaymentStatus:     customerRequest.PaymentStatus,
+	}
+
+	if !customerRequest.FormationDate.IsZero() { // != nil
+		formationDate := customerRequest.FormationDate.Format("2006-01-02 15:04:05")
+		output.FormationDate = &formationDate
+	}
+
+	if !customerRequest.CompletionDate.IsZero() { // != nil
+		completionDate := customerRequest.CompletionDate.Format("2006-01-02 15:04:05")
+		output.CompletionDate = &completionDate
+	}
+
+	if customerRequest.Moderator != nil {
+		output.Moderator = &customerRequest.Moderator.Login
+	}
+
+	return output
+}
+
+type AuthResp struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
 }

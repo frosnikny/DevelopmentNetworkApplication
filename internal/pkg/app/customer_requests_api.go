@@ -2,47 +2,65 @@ package app
 
 import (
 	"awesomeProject/internal/app/ds"
+	"awesomeProject/internal/app/role"
 	"awesomeProject/internal/app/schemes"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"time"
 )
 
 func (a *Application) GetAllCustomerRequests(c *gin.Context) {
 	var request schemes.GetAllCustomerRequestReq
+	var err error
 	request.RecordStatus = 10
 	if err := c.ShouldBind(&request); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	customerRequests, err := a.repo.GetAllCustomerRequests(request.FormationDateStart, request.FormationDateEnd, request.RecordStatus)
+	userId := getUserId(c)
+	userRole := getUserRole(c)
+	log.Println(userId, userRole)
+	var customerRequests []ds.CustomerRequest
+	if userRole == role.Customer {
+		customerRequests, err = a.repo.GetAllCustomerRequests(&userId, request.FormationDateStart, request.FormationDateEnd, request.RecordStatus)
+	} else {
+		customerRequests, err = a.repo.GetAllCustomerRequests(nil, request.FormationDateStart, request.FormationDateEnd, request.RecordStatus)
+	}
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	outputCustomerRequests := make([]schemes.CustomerRequestOutputResponse, len(customerRequests))
+	outputCustomerRequests := make([]schemes.AllCustomerRequestOutputResponse, len(customerRequests))
 	for i, customerRequest := range customerRequests {
-		serviceRequests, err := a.repo.GetServiceRequestsByCustId(customerRequest.UUID)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		outputCustomerRequests[i] = schemes.ConvertCustomerRequestResponse(&customerRequest, serviceRequests)
+		outputCustomerRequests[i] = schemes.ConvertAllCustomerRequestResponse(&customerRequest)
 	}
 	c.JSON(http.StatusOK, schemes.AllCustomerRequestsResponse{CustomerRequests: outputCustomerRequests})
 }
 
 func (a *Application) GetCustomerRequest(c *gin.Context) {
 	var request schemes.CustomerRequestReq
+	var err error
 	if err := c.ShouldBindUri(&request); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	customerRequest, err := a.repo.GetCustomerRequestById(request.CustomerRequestId, a.getCustomer())
+	userId := getUserId(c)
+	userRole := getUserRole(c)
+	var customerRequest *ds.CustomerRequest
+	if userRole == role.Moderator {
+		customerRequest, err = a.repo.GetCustomerRequestById(request.CustomerRequestId, "")
+	} else {
+		customerRequest, err = a.repo.GetCustomerRequestById(request.CustomerRequestId, userId)
+	}
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -66,6 +84,10 @@ func (a *Application) GetCustomerRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, schemes.CustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests), DevelopmentServices: developmentServices})
 }
 
+type SwaggerUpdateTransportationRequest struct {
+	WorkSpecification string `json:"work_specification"`
+}
+
 func (a *Application) UpdateCustomerRequest(c *gin.Context) {
 	var request schemes.UpdateCustomerRequestReq
 	if err := c.ShouldBindUri(&request.URI); err != nil {
@@ -76,13 +98,15 @@ func (a *Application) UpdateCustomerRequest(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, a.getCustomer())
+
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if customerRequest == nil {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("перевозка не найдена"))
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("заявка не найдена"))
 		return
 	}
 	customerRequest.WorkSpecification = request.WorkSpecification
@@ -107,13 +131,14 @@ func (a *Application) DeleteCustomerRequest(c *gin.Context) {
 		return
 	}
 
-	customerRequest, err := a.repo.GetCustomerRequestById(request.CustomerRequestId, a.getCustomer())
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if customerRequest == nil {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("перевозка не найдена"))
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("заявка не найдена"))
 		return
 	}
 	customerRequest.RecordStatus = ds.CRDeleted
@@ -131,7 +156,9 @@ func (a *Application) DeleteFromCustomerRequest(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	customerRequest, err := a.repo.GetCustomerRequestById(request.CustomerRequestId, a.getCustomer())
+
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -170,7 +197,8 @@ func (a *Application) UserConfirm(c *gin.Context) {
 		return
 	}
 
-	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, a.getCustomer())
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -184,10 +212,10 @@ func (a *Application) UserConfirm(c *gin.Context) {
 		return
 	}
 
-	if err := paymentRequest(customerRequest.UUID); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf(`payment service is unavailable: {%s}`, err))
-		return
-	}
+	//if err := paymentRequest(customerRequest.UUID); err != nil {
+	//	c.AbortWithError(http.StatusInternalServerError, fmt.Errorf(`payment service is unavailable: {%s}`, err))
+	//	return
+	//}
 	paymentStatus := ds.PaymentStarted
 	customerRequest.PaymentStatus = &paymentStatus
 	customerRequest.RecordStatus = ds.CRWorks
@@ -217,7 +245,8 @@ func (a *Application) ModeratorConfirm(c *gin.Context) {
 		return
 	}
 
-	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, a.getCustomer())
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -231,7 +260,7 @@ func (a *Application) ModeratorConfirm(c *gin.Context) {
 		return
 	}
 	customerRequest.RecordStatus = request.RecordStatus
-	customerRequest.ModeratorId = a.getModerator()
+	customerRequest.ModeratorId = &userId
 	if request.RecordStatus == ds.CRCompleted {
 		customerRequest.CompletionDate = time.Now()
 	}
@@ -265,7 +294,7 @@ func (a *Application) Payment(c *gin.Context) {
 		return
 	}
 	if customerRequest == nil {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("перевозка не найдена"))
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("заявка не найдена"))
 		return
 	}
 	if customerRequest.RecordStatus != ds.CRWorks {
@@ -274,11 +303,12 @@ func (a *Application) Payment(c *gin.Context) {
 	}
 
 	var paymentStatus string
-	if request.PaymentStatus {
+	if *request.PaymentStatus {
 		paymentStatus = "1"
 	} else {
 		paymentStatus = "0"
 	}
+	//paymentStatus = request.PaymentStatus
 	customerRequest.PaymentStatus = &paymentStatus
 
 	if err := a.repo.SaveCustomerRequest(customerRequest); err != nil {

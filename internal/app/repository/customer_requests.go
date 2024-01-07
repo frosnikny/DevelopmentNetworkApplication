@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (r *Repository) GetAllCustomerRequests(formationDateStart, formationDateEnd *time.Time, recordStatus uint) ([]ds.CustomerRequest, error) {
+func (r *Repository) GetAllCustomerRequests(customerId *string, formationDateStart, formationDateEnd *time.Time, recordStatus uint) ([]ds.CustomerRequest, error) {
 	var customerRequests []ds.CustomerRequest
 	log.Println(recordStatus)
 	query := r.db.Preload("Creator").Preload("Moderator")
@@ -16,6 +16,10 @@ func (r *Repository) GetAllCustomerRequests(formationDateStart, formationDateEnd
 		query = query.Where("record_status = ?", recordStatus)
 	}
 	query = query.Where("record_status != ?", ds.CRDeleted)
+	if customerId != nil {
+		log.Println("cus: ", customerId)
+		query = query.Where("creator_id = ?", *customerId)
+	}
 	if formationDateStart != nil && formationDateEnd != nil {
 		query = query.Where("formation_date BETWEEN ? AND ?", *formationDateStart, *formationDateEnd)
 	} else if formationDateStart != nil {
@@ -90,11 +94,15 @@ func (r *Repository) GetServiceRequestsByCustId(customerRequestId string) ([]ds.
 	return serviceRequests, nil
 }
 
-func (r *Repository) GetCustomerRequestById(customerRequestId, customerId string) (*ds.CustomerRequest, error) {
+func (r *Repository) GetCustomerRequestById(customerRequestId, userId string) (*ds.CustomerRequest, error) {
 	customerRequest := &ds.CustomerRequest{}
-	err := r.db.Preload("Moderator").Preload("Creator").
-		Where("record_status != ?", ds.CRDeleted).
-		First(customerRequest, ds.CustomerRequest{UUID: customerRequestId, CreatorId: customerId}).Error
+	query := r.db.Preload("Moderator").Preload("Creator").
+		Where("record_status != ?", ds.CRDeleted)
+	//if userId != "" {
+	//	query = query.Where("creator_id = ?", userId)
+	//}
+	query = query.First(customerRequest, ds.CustomerRequest{UUID: customerRequestId})
+	err := query.Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
