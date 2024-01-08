@@ -1,0 +1,453 @@
+definitions:
+  app.SwaggerUpdateTransportationRequest:
+    properties:
+      work_specification:
+        type: string
+    type: object
+  ds.DevelopmentService:
+    properties:
+      description:
+        type: string
+      detailedPrice:
+        type: number
+      image_url:
+        type: string
+      price:
+        type: number
+      recordStatus:
+        type: integer
+      technology:
+        type: string
+      title:
+        type: string
+      uuid:
+        type: string
+    type: object
+  schemes.AllCustomerRequestOutputResponse:
+    properties:
+      completion_date:
+        type: string
+      creation_date:
+        type: string
+      creator:
+        type: string
+      formation_date:
+        type: string
+      moderator:
+        type: string
+      payment_status:
+        type: string
+      record_status:
+        type: integer
+      uuid:
+        type: string
+      work_specification:
+        type: string
+    type: object
+  schemes.AllCustomerRequestsResponse:
+    properties:
+      customer_requests:
+        items:
+          $ref: '#/definitions/schemes.AllCustomerRequestOutputResponse'
+        type: array
+    type: object
+  schemes.AuthResp:
+    properties:
+      access_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  schemes.CustomerRequestOutputResponse:
+    properties:
+      completion_date:
+        type: string
+      creation_date:
+        type: string
+      creator:
+        type: string
+      formation_date:
+        type: string
+      moderator:
+        type: string
+      payment_status:
+        type: string
+      record_status:
+        type: integer
+      service_requests:
+        items:
+          $ref: '#/definitions/schemes.ServiceRequestResponse'
+        type: array
+      uuid:
+        type: string
+      work_specification:
+        type: string
+    type: object
+  schemes.CustomerRequestResponse:
+    properties:
+      customer_request:
+        $ref: '#/definitions/schemes.CustomerRequestOutputResponse'
+      development_services:
+        items:
+          $ref: '#/definitions/ds.DevelopmentService'
+        type: array
+    type: object
+  schemes.CustomerRequests:
+    properties:
+      development_services_count:
+        type: integer
+      uuid:
+        type: string
+    type: object
+  schemes.GetAllDevelopmentServicesResponse:
+    properties:
+      development_services:
+        items:
+          $ref: '#/definitions/ds.DevelopmentService'
+        type: array
+      draft_customer_request:
+        $ref: '#/definitions/schemes.CustomerRequests'
+    type: object
+  schemes.LoginReq:
+    properties:
+      login:
+        maxLength: 30
+        type: string
+      password:
+        maxLength: 30
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  schemes.RegisterReq:
+    properties:
+      login:
+        maxLength: 30
+        type: string
+      password:
+        maxLength: 30
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  schemes.ServiceRequestResponse:
+    properties:
+      development_service_id:
+        type: string
+      workScope:
+        type: string
+      workingDays:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /api/devs:
+    get:
+      description: Возвращает все доступные услуги по разработке с опциональной фильтрацией
+        по типу
+      parameters:
+      - description: тип услуги для фильтрации
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemes.GetAllDevelopmentServicesResponse'
+      tags:
+      - Услуги по разработке
+    post:
+      consumes:
+      - multipart/form-data
+      description: Добавить новую услугу по разработке
+      parameters:
+      - description: Изображение услуги по разработке
+        in: formData
+        name: image
+        type: file
+      - description: Название
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Цена
+        in: formData
+        name: price
+        required: true
+        type: integer
+      - description: Технологии
+        in: formData
+        name: technology
+        required: true
+        type: string
+      - description: Цена за день
+        in: formData
+        name: detailed_price
+        required: true
+        type: number
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Услуги по разработке
+  /api/devs/{development_service_id}:
+    delete:
+      description: Удаляет услугу по разработке по id
+      parameters:
+      - description: id услуги
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Услуги по разработке
+    get:
+      description: Возвращает более подробную информацию об одной из услуг по разработке
+      parameters:
+      - description: id услуги
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.DevelopmentService'
+      tags:
+      - Услуги по разработке
+    put:
+      consumes:
+      - multipart/form-data
+      description: Изменить данные полей об услуге по разработке
+      parameters:
+      - description: Идентификатор услуги
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Изображение услуги по разработке
+        in: formData
+        name: image
+        type: file
+      - description: Название
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Описание
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Цена
+        in: formData
+        name: price
+        required: true
+        type: integer
+      - description: Технологии
+        in: formData
+        name: technology
+        required: true
+        type: string
+      - description: Цена за день
+        in: formData
+        name: detailed_price
+        required: true
+        type: number
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Услуги по разработке
+  /api/devs/{development_service_id}/add_to_request:
+    post:
+      description: Добавить выбранную услугу по разработке в черновик заказа
+      parameters:
+      - description: id услуги
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Услуги по разработке
+  /api/requests:
+    delete:
+      description: Удаляет заказ
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Заказы
+    get:
+      description: Возвращает все заказы с фильтрацией по статусу и дате формирования
+      parameters:
+      - description: статус заказа
+        in: query
+        name: status
+        type: string
+      - description: начальная дата формирования
+        in: query
+        name: formation_date_start
+        type: string
+      - description: конечная дата формирования
+        in: query
+        name: formation_date_end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemes.AllCustomerRequestsResponse'
+      tags:
+      - Заказы
+    put:
+      description: Позволяет изменить спецификацию заказа и возвращает обновлённые
+        данные
+      parameters:
+      - description: Спецификация
+        in: body
+        name: transport
+        required: true
+        schema:
+          $ref: '#/definitions/app.SwaggerUpdateTransportationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Заказы
+  /api/requests/{customer_request_id}:
+    get:
+      description: Возвращает подробную информацию о заказе и его составе
+      parameters:
+      - description: id заказа
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemes.CustomerRequestResponse'
+      tags:
+      - Заказы
+  /api/requests/{customer_request_id}/delete_development_service/{development_service_id}:
+    delete:
+      description: Удалить услугу по разработке из чернового заказа
+      parameters:
+      - description: id заказа
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Заказы
+  /api/requests/{id}/moderator_confirm:
+    put:
+      description: Подтвердить или отменить заказ модератором
+      parameters:
+      - description: id заказа
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: подтвердить
+        in: body
+        name: confirm
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Заказы
+  /api/requests/user_confirm:
+    put:
+      description: Сформировать заказ пользователем
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Заказы
+  /api/user/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя по логиню, паролю и отдаёт jwt токен для
+        дальнейших запросов
+      parameters:
+      - description: login and password
+        in: body
+        name: user_credentials
+        required: true
+        schema:
+          $ref: '#/definitions/schemes.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemes.AuthResp'
+      tags:
+      - Авторизация
+  /api/user/loguot:
+    get:
+      consumes:
+      - application/json
+      description: Выход из аккаунта
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Авторизация
+  /api/user/sign_up:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация нового пользователя
+      parameters:
+      - description: login and password
+        in: body
+        name: user_credentials
+        required: true
+        schema:
+          $ref: '#/definitions/schemes.RegisterReq'
+      responses:
+        "200":
+          description: OK
+      tags:
+      - Авторизация
+swagger: "2.0"
