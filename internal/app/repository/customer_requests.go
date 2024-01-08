@@ -36,9 +36,13 @@ func (r *Repository) GetAllCustomerRequests(customerId *string, formationDateSta
 
 func (r *Repository) GetDraftCustomerRequest(customerId string) (*ds.CustomerRequest, error) {
 	customerRequest := &ds.CustomerRequest{}
-	err := r.db.Table("customer_requests").
-		Where("record_status = ?", ds.CRDraft).Where("creator_id", customerId).First(customerRequest).Error
-	log.Println(customerRequest)
+	if customerId == "" {
+		return nil, nil
+	}
+	query := r.db.Table("customer_requests").
+		Where("record_status = ?", ds.CRDraft)
+	query = query.Where("creator_id", customerId)
+	err := query.First(customerRequest).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

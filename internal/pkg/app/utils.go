@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -72,7 +71,6 @@ func paymentRequest(customerRequestId string) error {
 
 func getUserId(c *gin.Context) string {
 	userId, _ := c.Get("userId")
-	log.Println(userId)
 	return userId.(string)
 }
 

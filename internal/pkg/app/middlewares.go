@@ -20,6 +20,7 @@ func (a *Application) WithAuthCheck(assignedRoles ...role.Role) func(ctx *gin.Co
 		if !strings.HasPrefix(jwtStr, jwtPrefix) {
 			for _, oneOfAssignedRole := range assignedRoles {
 				if role.NotAuthorized == oneOfAssignedRole {
+					c.Set("userId", "")
 					c.Set("userRole", role.NotAuthorized)
 					return
 				}

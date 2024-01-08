@@ -14,7 +14,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-// @Summary		Регистрация
+// Register @Summary		Регистрация
 // @Tags		Авторизация
 // @Description	Регистрация нового пользователя
 // @Accept		json
@@ -51,7 +51,7 @@ func (a *Application) Register(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// @Summary		Авторизация
+// Login @Summary		Авторизация
 // @Tags		Авторизация
 // @Description	Авторизует пользователя по логиню, паролю и отдаёт jwt токен для дальнейших запросов
 // @Accept		json
@@ -106,7 +106,7 @@ func (a *Application) Login(c *gin.Context) {
 	})
 }
 
-// @Summary		Выйти из аккаунта
+// Logout @Summary		Выйти из аккаунта
 // @Tags		Авторизация
 // @Description	Выход из аккаунта
 // @Accept		json

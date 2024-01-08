@@ -23,8 +23,7 @@ type AllCustomerRequestsResponse struct {
 }
 
 type CustomerRequestResponse struct {
-	CustomerRequest     CustomerRequestOutputResponse `json:"customer_request"`
-	DevelopmentServices []ds.DevelopmentService       `json:"development_services"`
+	CustomerRequest CustomerRequestOutputResponse `json:"customer_request"`
 }
 
 type UpdateCustomerRequestResponse struct {
@@ -44,16 +43,17 @@ type AllCustomerRequestOutputResponse struct {
 }
 
 type CustomerRequestOutputResponse struct {
-	UUID              string                   `json:"uuid"`
-	RecordStatus      uint                     `json:"record_status"`
-	CreationDate      string                   `json:"creation_date"`
-	FormationDate     *string                  `json:"formation_date"`
-	CompletionDate    *string                  `json:"completion_date"`
-	WorkSpecification string                   `json:"work_specification"`
-	Moderator         *string                  `json:"moderator"`
-	Creator           string                   `json:"creator"`
-	PaymentStatus     *string                  `json:"payment_status"`
-	ServiceRequests   []ServiceRequestResponse `json:"service_requests"`
+	UUID                string                   `json:"uuid"`
+	RecordStatus        uint                     `json:"record_status"`
+	CreationDate        string                   `json:"creation_date"`
+	FormationDate       *string                  `json:"formation_date"`
+	CompletionDate      *string                  `json:"completion_date"`
+	WorkSpecification   string                   `json:"work_specification"`
+	Moderator           *string                  `json:"moderator"`
+	Creator             string                   `json:"creator"`
+	PaymentStatus       *string                  `json:"payment_status"`
+	ServiceRequests     []ServiceRequestResponse `json:"service_requests"`
+	DevelopmentServices []ds.DevelopmentService  `json:"development_services"`
 }
 
 type ServiceRequestResponse struct {
@@ -62,7 +62,7 @@ type ServiceRequestResponse struct {
 	WorkingDays          uint   `gorm:"type:integer"`
 }
 
-func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, serviceRequests []ds.ServiceRequest) CustomerRequestOutputResponse {
+func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, serviceRequests []ds.ServiceRequest, developmentServices []ds.DevelopmentService) CustomerRequestOutputResponse {
 	var serviceRequestsResponse = make([]ServiceRequestResponse, len(serviceRequests))
 	for i, serviceRequest := range serviceRequests {
 		serviceRequestsResponse[i].DevelopmentServiceId = serviceRequest.DevelopmentServiceId
@@ -70,14 +70,27 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 		serviceRequestsResponse[i].WorkingDays = serviceRequest.WorkingDays
 	}
 
+	var developmentServicesResponse = make([]ds.DevelopmentService, len(developmentServices))
+	for i, developmentService := range developmentServices {
+		developmentServicesResponse[i].UUID = developmentService.UUID
+		developmentServicesResponse[i].Title = developmentService.Title
+		developmentServicesResponse[i].Description = developmentService.Description
+		developmentServicesResponse[i].ImageUrl = developmentService.ImageUrl
+		developmentServicesResponse[i].Price = developmentService.Price
+		developmentServicesResponse[i].RecordStatus = developmentService.RecordStatus
+		developmentServicesResponse[i].Technology = developmentService.Technology
+		developmentServicesResponse[i].DetailedPrice = developmentService.DetailedPrice
+	}
+
 	output := CustomerRequestOutputResponse{
-		UUID:              customerRequest.UUID,
-		RecordStatus:      customerRequest.RecordStatus,
-		CreationDate:      customerRequest.CreationDate.Format("2006-01-02 15:04:05"),
-		WorkSpecification: customerRequest.WorkSpecification,
-		Creator:           customerRequest.Creator.Login,
-		PaymentStatus:     customerRequest.PaymentStatus,
-		ServiceRequests:   serviceRequestsResponse,
+		UUID:                customerRequest.UUID,
+		RecordStatus:        customerRequest.RecordStatus,
+		CreationDate:        customerRequest.CreationDate.Format("2006-01-02 15:04:05"),
+		WorkSpecification:   customerRequest.WorkSpecification,
+		Creator:             customerRequest.Creator.Login,
+		PaymentStatus:       customerRequest.PaymentStatus,
+		ServiceRequests:     serviceRequestsResponse,
+		DevelopmentServices: developmentServicesResponse,
 	}
 
 	if !customerRequest.FormationDate.IsZero() { // != nil

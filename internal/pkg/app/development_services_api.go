@@ -5,9 +5,17 @@ import (
 	"awesomeProject/internal/app/schemes"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 )
 
+// GetDevelopmentService @Summary		Получить услугу по разработке
+// @Tags		Услуги по разработке
+// @Description	Возвращает более подробную информацию об одной из услуг по разработке
+// @Produce		json
+// @Param		type query string false "тип услуги для фильтрации"
+// @Success		200 {object} schemes.GetAllDevelopmentServicesResponse
+// @Router		/api/devs/{development_service_id} [get]
 func (a *Application) GetDevelopmentService(c *gin.Context) {
 	var request schemes.DevelopmentServiceReq
 	if err := c.ShouldBindUri(&request); err != nil {
@@ -27,8 +35,18 @@ func (a *Application) GetDevelopmentService(c *gin.Context) {
 	c.JSON(http.StatusOK, developmentService)
 }
 
+// GetAllDevelopmentServices @Summary		Получить все услуги по разработке
+// @Tags		Услуги по разработке
+// @Description	Возвращает все доступные услуги по разработке с опциональной фильтрацией по типу
+// @Produce		json
+// @Param		id path string true "id услуги"
+// @Success		200 {object} ds.DevelopmentService
+// @Router		/api/devs [get]
 func (a *Application) GetAllDevelopmentServices(c *gin.Context) {
 	var request schemes.GetAllDevelopmentServicesReq
+
+	log.Println("aaaaaa")
+
 	if err := c.ShouldBind(&request); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -40,8 +58,11 @@ func (a *Application) GetAllDevelopmentServices(c *gin.Context) {
 		return
 	}
 
-	draftCustomerRequest, err := a.repo.GetDraftCustomerRequest(a.getCustomer())
+	userId := getUserId(c)
+	log.Println("userId: ", userId)
+	draftCustomerRequest, err := a.repo.GetDraftCustomerRequest(userId)
 	if err != nil {
+		log.Println("error draft")
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -58,6 +79,12 @@ func (a *Application) GetAllDevelopmentServices(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// DeleteDevelopmentService @Summary		Удалить услугу по разработке
+// @Tags		Услуги по разработке
+// @Description	Удаляет услугу по разработке по id
+// @Param		id path string true "id услуги"
+// @Success		200
+// @Router		/api/devs/{development_service_id} [delete]
 func (a *Application) DeleteDevelopmentService(c *gin.Context) {
 	var request schemes.DevelopmentServiceReq
 	if err := c.ShouldBindUri(&request); err != nil {
@@ -88,6 +115,19 @@ func (a *Application) DeleteDevelopmentService(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// ChangeDevelopmentService @Summary		Изменить услугу по разработке
+// @Tags		Услуги по разработке
+// @Description	Изменить данные полей об услуге по разработке
+// @Accept		mpfd
+// @Param		id path string true "Идентификатор услуги" format:"uuid"
+// @Param		image formData file false "Изображение услуги по разработке"
+// @Param		title formData string true "Название" format:"string" maxLength:100
+// @Param		description formData string true "Описание" format:"string" maxLength:500
+// @Param		price formData int true "Цена" format:"int"
+// @Param		technology formData string true "Технологии" format:"string" maxLength:100
+// @Param		detailed_price formData float32 true "Цена за день" format:"real"
+// @Success		200
+// @Router		/api/devs/{development_service_id} [put]
 func (a *Application) ChangeDevelopmentService(c *gin.Context) {
 	var request schemes.AddDevelopmentServiceReq
 	if err := c.ShouldBindUri(&request); err != nil {
@@ -105,7 +145,7 @@ func (a *Application) ChangeDevelopmentService(c *gin.Context) {
 		return
 	}
 	if developmentService == nil {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("контейнер не найден"))
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("услуга по разработке не найдена"))
 		return
 	}
 	if request.Title != "" {
@@ -146,6 +186,18 @@ func (a *Application) ChangeDevelopmentService(c *gin.Context) {
 	c.JSON(http.StatusOK, developmentService)
 }
 
+// AddDevelopmentService @Summary		Добавить услугу по разработке
+// @Tags		Услуги по разработке
+// @Description	Добавить новую услугу по разработке
+// @Accept		mpfd
+// @Param		image formData file false "Изображение услуги по разработке"
+// @Param		title formData string true "Название" format:"string" maxLength:100
+// @Param		description formData string true "Описание" format:"string" maxLength:500
+// @Param		price formData int true "Цена" format:"int"
+// @Param		technology formData string true "Технологии" format:"string" maxLength:100
+// @Param		detailed_price formData float32 true "Цена за день" format:"real"
+// @Success		200
+// @Router		/api/devs [post]
 func (a *Application) AddDevelopmentService(c *gin.Context) {
 	var request schemes.AddDevelopmentServiceReq
 	if err := c.ShouldBind(&request); err != nil {
@@ -176,6 +228,12 @@ func (a *Application) AddDevelopmentService(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// AddToCustomerRequest @Summary		Добавить в заказ
+// @Tags		Услуги по разработке
+// @Description	Добавить выбранную услугу по разработке в черновик заказа
+// @Param		id path string true "id услуги"
+// @Success		200
+// @Router		/api/devs/{development_service_id}/add_to_request [post]
 func (a *Application) AddToCustomerRequest(c *gin.Context) {
 	var request schemes.DevelopmentServiceReq
 	if err := c.ShouldBindUri(&request); err != nil {

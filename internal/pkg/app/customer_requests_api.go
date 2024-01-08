@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+// GetAllCustomerRequests @Summary		Получить все заказы
+// @Tags		Заказы
+// @Description	Возвращает все заказы с фильтрацией по статусу и дате формирования
+// @Produce		json
+// @Param		status query string false "статус заказа"
+// @Param		formation_date_start query string false "начальная дата формирования"
+// @Param		formation_date_end query string false "конечная дата формирования"
+// @Success		200 {object} schemes.AllCustomerRequestsResponse
+// @Router		/api/requests [get]
 func (a *Application) GetAllCustomerRequests(c *gin.Context) {
 	var request schemes.GetAllCustomerRequestReq
 	var err error
@@ -45,6 +54,13 @@ func (a *Application) GetAllCustomerRequests(c *gin.Context) {
 	c.JSON(http.StatusOK, schemes.AllCustomerRequestsResponse{CustomerRequests: outputCustomerRequests})
 }
 
+// GetCustomerRequest @Summary		Получить один заказ
+// @Tags		Заказы
+// @Description	Возвращает подробную информацию о заказе и его составе
+// @Produce		json
+// @Param		id path string true "id заказа"
+// @Success		200 {object} schemes.CustomerRequestResponse
+// @Router		/api/requests/{customer_request_id} [get]
 func (a *Application) GetCustomerRequest(c *gin.Context) {
 	var request schemes.CustomerRequestReq
 	var err error
@@ -75,19 +91,28 @@ func (a *Application) GetCustomerRequest(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	log.Println(developmentServices)
 
 	serviceRequests, err := a.repo.GetServiceRequestsByCustId(request.CustomerRequestId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	c.JSON(http.StatusOK, schemes.CustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests), DevelopmentServices: developmentServices})
+	c.JSON(http.StatusOK, schemes.CustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests, developmentServices)})
 }
 
 type SwaggerUpdateTransportationRequest struct {
 	WorkSpecification string `json:"work_specification"`
 }
 
+// UpdateCustomerRequest @Summary		Указать спецификацию заказа
+// @Tags		Заказы
+// @Description	Позволяет изменить спецификацию заказа и возвращает обновлённые данные
+// @Access		json
+// @Produce		json
+// @Param		transport body SwaggerUpdateTransportationRequest true "Спецификация"
+// @Success		200
+// @Router		/api/requests [put]
 func (a *Application) UpdateCustomerRequest(c *gin.Context) {
 	var request schemes.UpdateCustomerRequestReq
 	if err := c.ShouldBindUri(&request.URI); err != nil {
@@ -121,9 +146,20 @@ func (a *Application) UpdateCustomerRequest(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, schemes.UpdateCustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests)})
+	developmentServices, err := a.repo.GetServiceRequests(customerRequest.UUID)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, schemes.UpdateCustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests, developmentServices)})
 }
 
+// DeleteCustomerRequest @Summary		Удалить заказ
+// @Tags		Заказы
+// @Description	Удаляет заказ
+// @Success		200
+// @Router		/api/requests [delete]
 func (a *Application) DeleteCustomerRequest(c *gin.Context) {
 	var request schemes.CustomerRequestReq
 	if err := c.ShouldBindUri(&request); err != nil {
@@ -150,6 +186,13 @@ func (a *Application) DeleteCustomerRequest(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// DeleteFromCustomerRequest @Summary		Удалить услугу по разработке из чернового заказа
+// @Tags		Заказы
+// @Description	Удалить услугу по разработке из чернового заказа
+// @Produce		json
+// @Param		id path string true "id заказа"
+// @Success		200
+// @Router		/api/requests/{customer_request_id}/delete_development_service/{development_service_id} [delete]
 func (a *Application) DeleteFromCustomerRequest(c *gin.Context) {
 	var request schemes.DeleteFromCustomerRequestReq
 	if err := c.ShouldBindUri(&request); err != nil {
@@ -186,6 +229,11 @@ func (a *Application) DeleteFromCustomerRequest(c *gin.Context) {
 	c.JSON(http.StatusOK, schemes.AllDevelopmentServicesResponse{DevelopmentServices: developmentServices})
 }
 
+// UserConfirm @Summary		Сформировать заказ
+// @Tags		Заказы
+// @Description	Сформировать заказ пользователем
+// @Success		200
+// @Router		/api/requests/user_confirm [put]
 func (a *Application) UserConfirm(c *gin.Context) {
 	var request schemes.UserConfirmReq
 	if err := c.ShouldBindUri(&request.URI); err != nil {
@@ -229,6 +277,13 @@ func (a *Application) UserConfirm(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// ModeratorConfirm @Summary		Подтвердить заказ
+// @Tags		Заказы
+// @Description	Подтвердить или отменить заказ модератором
+// @Param		id path string true "id заказа"
+// @Param		confirm body boolean true "подтвердить"
+// @Success		200
+// @Router		/api/requests/{id}/moderator_confirm [put]
 func (a *Application) ModeratorConfirm(c *gin.Context) {
 	var request schemes.ModeratorConfirmReq
 	if err := c.ShouldBindUri(&request.URI); err != nil {
@@ -288,7 +343,8 @@ func (a *Application) Payment(c *gin.Context) {
 		return
 	}
 
-	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, a.getCustomer())
+	userId := getUserId(c)
+	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

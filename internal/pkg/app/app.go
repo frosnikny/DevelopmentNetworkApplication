@@ -1,6 +1,7 @@
 package app
 
 import (
+	"awesomeProject/docs"
 	"awesomeProject/internal/app/config"
 	"awesomeProject/internal/app/dsn"
 	"awesomeProject/internal/app/redis"
@@ -11,6 +12,9 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"log"
+
+	swaggerFiles "github.com/swaggo/files"     // swagger embed files
+	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
 type Application struct {
@@ -24,6 +28,12 @@ func (a *Application) StartServer() {
 	log.Println("Server start up")
 
 	r := gin.Default()
+
+	docs.SwaggerInfo.Title = "Development Services"
+	docs.SwaggerInfo.Description = "API SERVER"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "127.0.0.1:8080"
+	docs.SwaggerInfo.BasePath = "/"
 
 	r.Use(ErrorHandler())
 
@@ -63,6 +73,8 @@ func (a *Application) StartServer() {
 			u.GET("/logout", a.Logout)
 		}
 	}
+
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := r.Run(fmt.Sprintf("%s:%d", a.config.ServiceHost, a.config.ServicePort))
 	if err != nil {
