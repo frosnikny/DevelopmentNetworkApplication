@@ -15,6 +15,7 @@ func (r *Repository) GetAllCustomerRequests(customerId *string, formationDateSta
 	if recordStatus != 10 {
 		query = query.Where("record_status = ?", recordStatus)
 	}
+	query = query.Where("record_status != ?", ds.CRDraft)
 	query = query.Where("record_status != ?", ds.CRDeleted)
 	if customerId != nil {
 		log.Println("cus: ", customerId)
@@ -70,7 +71,7 @@ func (r *Repository) AddToCustomerRequest(customerRequestId, developmentServiceI
 	return nil
 }
 
-func (r *Repository) GetServiceRequests(customerRequestId string) ([]ds.DevelopmentService, error) {
+func (r *Repository) GetDevServices(customerRequestId string) ([]ds.DevelopmentService, error) {
 	var developmentServices []ds.DevelopmentService
 
 	err := r.db.Table("service_requests").
@@ -83,6 +84,19 @@ func (r *Repository) GetServiceRequests(customerRequestId string) ([]ds.Developm
 		return nil, err
 	}
 	return developmentServices, nil
+}
+
+func (r *Repository) GetServiceRequests(customerRequestId string, devServiceId string) ([]ds.ServiceRequest, error) {
+	var serviceRequests []ds.ServiceRequest
+
+	err := r.db.Table("service_requests").
+		Where(ds.ServiceRequest{CustomerRequestId: customerRequestId, DevelopmentServiceId: devServiceId}).
+		Scan(&serviceRequests).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return serviceRequests, nil
 }
 
 func (r *Repository) GetServiceRequestsByCustId(customerRequestId string) ([]ds.ServiceRequest, error) {
@@ -114,6 +128,15 @@ func (r *Repository) GetCustomerRequestById(customerRequestId, userId string) (*
 		return nil, err
 	}
 	return customerRequest, nil
+}
+
+func (r *Repository) SaveServiceRequest(serviceRequest *ds.ServiceRequest) error {
+	err := r.db.Save(serviceRequest).Error
+	if err != nil {
+		log.Println("e")
+		return err
+	}
+	return nil
 }
 
 func (r *Repository) SaveCustomerRequest(customerRequest *ds.CustomerRequest) error {

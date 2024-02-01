@@ -30,6 +30,10 @@ type UpdateCustomerRequestResponse struct {
 	CustomerRequest CustomerRequestOutputResponse `json:"customer_request"`
 }
 
+type UpdateServiceRequestResponse struct {
+	ServiceRequest ds.ServiceRequest `json:"service_request"`
+}
+
 type AllCustomerRequestOutputResponse struct {
 	UUID              string  `json:"uuid"`
 	RecordStatus      uint    `json:"record_status"`
@@ -43,23 +47,47 @@ type AllCustomerRequestOutputResponse struct {
 }
 
 type CustomerRequestOutputResponse struct {
-	UUID                string                   `json:"uuid"`
-	RecordStatus        uint                     `json:"record_status"`
-	CreationDate        string                   `json:"creation_date"`
-	FormationDate       *string                  `json:"formation_date"`
-	CompletionDate      *string                  `json:"completion_date"`
-	WorkSpecification   string                   `json:"work_specification"`
-	Moderator           *string                  `json:"moderator"`
-	Creator             string                   `json:"creator"`
-	PaymentStatus       *string                  `json:"payment_status"`
-	ServiceRequests     []ServiceRequestResponse `json:"service_requests"`
-	DevelopmentServices []ds.DevelopmentService  `json:"development_services"`
+	UUID                string                       `json:"uuid"`
+	RecordStatus        uint                         `json:"record_status"`
+	CreationDate        string                       `json:"creation_date"`
+	FormationDate       *string                      `json:"formation_date"`
+	CompletionDate      *string                      `json:"completion_date"`
+	WorkSpecification   string                       `json:"work_specification"`
+	Moderator           *string                      `json:"moderator"`
+	Creator             string                       `json:"creator"`
+	PaymentStatus       *string                      `json:"payment_status"`
+	DevelopmentServices []DevelopmentServiceResponse `json:"development_services"`
 }
 
 type ServiceRequestResponse struct {
 	DevelopmentServiceId string `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"development_service_id"`
 	WorkScope            string `gorm:"type:text"`
-	WorkingDays          uint   `gorm:"type:integer"`
+}
+
+type DevelopmentServiceResponse struct {
+	UUID          string  `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"uuid"`
+	Title         string  `gorm:"size:100"`
+	Description   string  `gorm:"type:text"`
+	ImageUrl      *string `gorm:"size:100" json:"image_url"`
+	Price         float32 `gorm:"type:real"`
+	RecordStatus  uint    `gorm:"type:integer"`
+	Technology    string  `gorm:"type:text"`
+	DetailedPrice float32 `gorm:"type:real"`
+
+	ServiceRequest ServiceRequestResponse
+}
+
+func mergeData(developmentServices []DevelopmentServiceResponse, serviceRequests []ServiceRequestResponse) []DevelopmentServiceResponse {
+	for i, devService := range developmentServices {
+		for _, servRequest := range serviceRequests {
+			if devService.UUID == servRequest.DevelopmentServiceId {
+				developmentServices[i].ServiceRequest = servRequest
+				break
+			}
+		}
+	}
+
+	return developmentServices
 }
 
 func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, serviceRequests []ds.ServiceRequest, developmentServices []ds.DevelopmentService) CustomerRequestOutputResponse {
@@ -67,10 +95,9 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 	for i, serviceRequest := range serviceRequests {
 		serviceRequestsResponse[i].DevelopmentServiceId = serviceRequest.DevelopmentServiceId
 		serviceRequestsResponse[i].WorkScope = serviceRequest.WorkScope
-		serviceRequestsResponse[i].WorkingDays = serviceRequest.WorkingDays
 	}
 
-	var developmentServicesResponse = make([]ds.DevelopmentService, len(developmentServices))
+	var developmentServicesResponse = make([]DevelopmentServiceResponse, len(developmentServices))
 	for i, developmentService := range developmentServices {
 		developmentServicesResponse[i].UUID = developmentService.UUID
 		developmentServicesResponse[i].Title = developmentService.Title
@@ -82,6 +109,8 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 		developmentServicesResponse[i].DetailedPrice = developmentService.DetailedPrice
 	}
 
+	developmentServicesResponse = mergeData(developmentServicesResponse, serviceRequestsResponse)
+
 	output := CustomerRequestOutputResponse{
 		UUID:                customerRequest.UUID,
 		RecordStatus:        customerRequest.RecordStatus,
@@ -89,7 +118,6 @@ func ConvertCustomerRequestResponse(customerRequest *ds.CustomerRequest, service
 		WorkSpecification:   customerRequest.WorkSpecification,
 		Creator:             customerRequest.Creator.Login,
 		PaymentStatus:       customerRequest.PaymentStatus,
-		ServiceRequests:     serviceRequestsResponse,
 		DevelopmentServices: developmentServicesResponse,
 	}
 
@@ -140,4 +168,5 @@ func ConvertAllCustomerRequestResponse(customerRequest *ds.CustomerRequest) AllC
 type AuthResp struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
+	Role        int    `json:"role"`
 }

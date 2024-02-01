@@ -86,7 +86,7 @@ func (a *Application) GetCustomerRequest(c *gin.Context) {
 		return
 	}
 
-	developmentServices, err := a.repo.GetServiceRequests(request.CustomerRequestId)
+	developmentServices, err := a.repo.GetDevServices(request.CustomerRequestId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -146,13 +146,51 @@ func (a *Application) UpdateCustomerRequest(c *gin.Context) {
 		return
 	}
 
-	developmentServices, err := a.repo.GetServiceRequests(customerRequest.UUID)
+	developmentServices, err := a.repo.GetDevServices(customerRequest.UUID)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, schemes.UpdateCustomerRequestResponse{CustomerRequest: schemes.ConvertCustomerRequestResponse(customerRequest, serviceRequests, developmentServices)})
+}
+
+// UpdateServiceRequest @Summary		Указать описание работы
+// @Tags		Заказы
+// @Description	Позволяет изменить описание работы у элемента заказа и возвращает обновлённые данные
+// @Access		json
+// @Produce		json
+// @Param		transport body schemes.UpdateServiceRequestReq true "Описание работы"
+// @Success		200
+// @Router		/api/requests/{customer_request_id}/change_scope/{development_service_id} [put]
+func (a *Application) UpdateServiceRequest(c *gin.Context) {
+	var request schemes.UpdateServiceRequestReq
+	if err := c.ShouldBindUri(&request.URI); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	if err := c.ShouldBind(&request); err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	serviceRequests, err := a.repo.GetServiceRequests(request.URI.CustomerRequestId, request.URI.DevelopmentServiceId)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if serviceRequests == nil {
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("заявка не найдена"))
+		return
+	}
+	serviceRequest := serviceRequests[0]
+	serviceRequest.WorkScope = request.WorkSpope
+	if err = a.repo.SaveServiceRequest(&serviceRequest); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, schemes.UpdateServiceRequestResponse{ServiceRequest: serviceRequest})
 }
 
 // DeleteCustomerRequest @Summary		Удалить заказ
@@ -220,7 +258,7 @@ func (a *Application) DeleteFromCustomerRequest(c *gin.Context) {
 		return
 	}
 
-	developmentServices, err := a.repo.GetServiceRequests(request.CustomerRequestId)
+	developmentServices, err := a.repo.GetDevServices(request.CustomerRequestId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -260,10 +298,10 @@ func (a *Application) UserConfirm(c *gin.Context) {
 		return
 	}
 
-	//if err := paymentRequest(customerRequest.UUID); err != nil {
-	//	c.AbortWithError(http.StatusInternalServerError, fmt.Errorf(`payment service is unavailable: {%s}`, err))
-	//	return
-	//}
+	if err := paymentRequest(customerRequest.UUID); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, fmt.Errorf(`payment service is unavailable: {%s}`, err))
+		return
+	}
 	paymentStatus := ds.PaymentStarted
 	customerRequest.PaymentStatus = &paymentStatus
 	customerRequest.RecordStatus = ds.CRWorks
@@ -307,7 +345,7 @@ func (a *Application) ModeratorConfirm(c *gin.Context) {
 		return
 	}
 	if customerRequest == nil {
-		c.AbortWithError(http.StatusNotFound, fmt.Errorf("перевозка не найдена"))
+		c.AbortWithError(http.StatusNotFound, fmt.Errorf("заказ не найден"))
 		return
 	}
 	if customerRequest.RecordStatus != ds.CRWorks {
@@ -343,7 +381,7 @@ func (a *Application) Payment(c *gin.Context) {
 		return
 	}
 
-	userId := getUserId(c)
+	userId := ""
 	customerRequest, err := a.repo.GetCustomerRequestById(request.URI.CustomerRequestId, userId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)

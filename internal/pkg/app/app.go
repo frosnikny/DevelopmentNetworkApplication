@@ -54,10 +54,11 @@ func (a *Application) StartServer() {
 		req := api.Group("/requests")
 		{
 
-			req.GET("", a.WithAuthCheck(role.Customer, role.Moderator), a.GetAllCustomerRequests)                            // Список (отфильтровать по дате формирования и статусу)
-			req.GET("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.GetCustomerRequest)           // Одна заявка
-			req.PUT("/:customer_request_id/update", a.WithAuthCheck(role.Customer, role.Moderator), a.UpdateCustomerRequest) // Изменение (добавление спецификации)
-			req.DELETE("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.DeleteCustomerRequest)     // Удаление
+			req.GET("", a.WithAuthCheck(role.Customer, role.Moderator), a.GetAllCustomerRequests)                                                         // Список (отфильтровать по дате формирования и статусу)
+			req.GET("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.GetCustomerRequest)                                        // Одна заявка
+			req.PUT("/:customer_request_id/update", a.WithAuthCheck(role.Customer, role.Moderator), a.UpdateCustomerRequest)                              // Изменение (добавление спецификации)
+			req.PUT("/:customer_request_id/change_scope/:development_service_id", a.WithAuthCheck(role.Customer, role.Moderator), a.UpdateServiceRequest) // Изменение (добавление спецификации)
+			req.DELETE("/:customer_request_id", a.WithAuthCheck(role.Customer, role.Moderator), a.DeleteCustomerRequest)                                  // Удаление
 			req.DELETE("/:customer_request_id/delete_development_service/:development_service_id", a.WithAuthCheck(role.Customer, role.Moderator),
 				a.DeleteFromCustomerRequest) // Изменение (удаление услуг)
 			req.PUT("/:customer_request_id/user_confirm", a.WithAuthCheck(role.Customer, role.Moderator), a.UserConfirm) // Сформировать создателем

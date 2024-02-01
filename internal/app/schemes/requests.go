@@ -19,6 +19,12 @@ type AddDevelopmentServiceReq struct {
 	Image *multipart.FileHeader `form:"image" json:"image"`
 }
 
+type ChangeDevelopmentServiceReq struct {
+	DevelopmentServiceId string `uri:"development_service_id" binding:"required,uuid"`
+	ds.DevelopmentService
+	Image *multipart.FileHeader `form:"image" json:"image"`
+}
+
 type GetAllCustomerRequestReq struct {
 	FormationDateStart *time.Time `form:"formation_date_start" json:"formation_date_start" time_format:"2006-01-02 15:04:05"`
 	FormationDateEnd   *time.Time `form:"formation_date_end" json:"formation_date_end" time_format:"2006-01-02 15:04:05"`
@@ -34,6 +40,14 @@ type UpdateCustomerRequestReq struct {
 		CustomerRequestId string `uri:"customer_request_id" binding:"required,uuid"`
 	}
 	WorkSpecification string `form:"work_specification" json:"work_specification" binding:"required,max=50"`
+}
+
+type UpdateServiceRequestReq struct {
+	URI struct {
+		CustomerRequestId    string `uri:"customer_request_id" binding:"required,uuid"`
+		DevelopmentServiceId string `uri:"development_service_id" binding:"required,uuid"`
+	}
+	WorkSpope string `form:"work_scope" json:"work_scope" binding:"required,max=50"`
 }
 
 type DeleteFromCustomerRequestReq struct {

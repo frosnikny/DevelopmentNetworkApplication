@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -56,9 +57,9 @@ func (a *Application) getModerator() *string {
 }
 
 func paymentRequest(customerRequestId string) error {
-	url := "http://localhost:8000/"
+	url := "http://localhost:8000/api/payment/"
 	payload := fmt.Sprintf(`{"customer_request_id": "%s"}`, customerRequestId)
-
+	log.Println(payload)
 	resp, err := http.Post(url, "application/json", bytes.NewBufferString(payload))
 	if err != nil {
 		return err

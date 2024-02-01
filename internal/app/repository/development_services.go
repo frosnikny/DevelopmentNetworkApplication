@@ -9,7 +9,10 @@ import (
 
 func (r *Repository) GetDevelopmentServiceByID(id string) (*ds.DevelopmentService, error) {
 	developmentService := &ds.DevelopmentService{UUID: id}
-	err := r.db.First(developmentService, "record_status = ?", ds.DSWorks).Error
+	query := r.db.Table("development_services")
+	query = query.Where("record_status = ?", ds.DSWorks)
+	query = query.Where("uuid = ?", id)
+	err := query.First(developmentService).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

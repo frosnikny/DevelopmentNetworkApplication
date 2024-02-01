@@ -69,7 +69,7 @@ func (a *Application) GetAllDevelopmentServices(c *gin.Context) {
 	response := schemes.GetAllDevelopmentServicesResponse{DraftCustomerRequest: nil, DevelopmentServices: developmentServices}
 	if draftCustomerRequest != nil {
 		response.DraftCustomerRequest = &schemes.CustomerRequests{UUID: draftCustomerRequest.UUID}
-		developmentServices, err := a.repo.GetServiceRequests(draftCustomerRequest.UUID)
+		developmentServices, err := a.repo.GetDevServices(draftCustomerRequest.UUID)
 		if err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -129,7 +129,7 @@ func (a *Application) DeleteDevelopmentService(c *gin.Context) {
 // @Success		200
 // @Router		/api/devs/{development_service_id} [put]
 func (a *Application) ChangeDevelopmentService(c *gin.Context) {
-	var request schemes.AddDevelopmentServiceReq
+	var request schemes.ChangeDevelopmentServiceReq
 	if err := c.ShouldBindUri(&request); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -139,11 +139,14 @@ func (a *Application) ChangeDevelopmentService(c *gin.Context) {
 		return
 	}
 
-	developmentService, err := a.repo.GetDevelopmentServiceByID(request.UUID)
+	developmentService, err := a.repo.GetDevelopmentServiceByID(request.DevelopmentServiceId)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	log.Println(developmentService)
+
 	if developmentService == nil {
 		c.AbortWithError(http.StatusNotFound, fmt.Errorf("услуга по разработке не найдена"))
 		return
@@ -277,7 +280,7 @@ func (a *Application) AddToCustomerRequest(c *gin.Context) {
 
 	// Вернуть список всех разработок в заказе
 	var developmentServices []ds.DevelopmentService
-	developmentServices, err = a.repo.GetServiceRequests(customerRequest.UUID)
+	developmentServices, err = a.repo.GetDevServices(customerRequest.UUID)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return

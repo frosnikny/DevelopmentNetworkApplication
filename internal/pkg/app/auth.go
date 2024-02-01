@@ -100,9 +100,12 @@ func (a *Application) Login(c *gin.Context) {
 	userId, _ := c.Get("userId")
 	log.Println(userId)
 
+	log.Println(user.Role)
+
 	c.JSON(http.StatusOK, schemes.AuthResp{
 		AccessToken: strToken,
 		TokenType:   "Bearer",
+		Role:        int(user.Role),
 	})
 }
 
